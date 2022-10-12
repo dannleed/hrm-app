@@ -1,4 +1,4 @@
-## HRMS application
+## Human Resources Management System
 
 First install dependencies
 
