@@ -13,7 +13,7 @@
     "prettier:check": "prettier --check \"*/**/*.{ts,tsx}\" --loglevel=warn",
     "prettier:fix": "prettier --write \"*/**/*.{ts,tsx}\" --loglevel=warn",
     "pre-commit-check": "npm run lint:check && npm run prettier:check",
-    "hooks:pre-commit": "npm run prettier:fix && npm run lint:fix && git add .",
+    "hooks:pre-commit": "npm run lint:check && npm run prettier:check",
     "prepare": "husky install"
   },
   "dependencies": {
