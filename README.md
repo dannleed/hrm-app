@@ -8,4 +8,4 @@ npm install
 
 ## DB Schema
 
-![DB Schema]('https://raw.githubusercontent.com/dannleed/hrm-app/main/prisma/ERD.svg')
+![DB Schema](./prisma/ERD.svg)
