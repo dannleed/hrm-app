@@ -1,9 +1,8 @@
 import { Center } from '@mantine/core';
 import Head from 'next/head';
 import { HeaderAction, HeaderActionProps } from '@components';
-import Image from 'next/image';
 
-function Home() {
+function Settings() {
 	const { links }: HeaderActionProps = {
 		links: [
 			{
@@ -42,18 +41,10 @@ function Home() {
 			</Head>
 			<HeaderAction links={links} />
 			<Center>
-				<h2>Home</h2>
-			</Center>
-			<Center>
-				<Image
-					src="https://upload.wikimedia.org/wikipedia/commons/3/3d/LARGE_elevation.jpg"
-					alt="hero"
-					width={1280}
-					height={720}
-				/>
+				<h2>Settings</h2>
 			</Center>
 		</>
 	);
 }
 
-export default Home;
+export default Settings;
