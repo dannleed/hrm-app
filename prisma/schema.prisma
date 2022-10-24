@@ -62,7 +62,7 @@ model VerificationToken {
 
 model Employee {
   id                      String                    @id @default(cuid())
-  internalId              String                    @unique
+  externalId              EmployeeExternalId[]
   firstName               String
   lastName                String
   middleName              String?
@@ -87,6 +87,18 @@ model Employee {
   deletedAt               DateTime?
 }
 
+model EmployeeExternalId {
+  id         String         @id @default(cuid())
+  employeeId String
+  externalId String
+  type       ExternalIdType
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  deletedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
 model EmployeePhone {
   id         String    @id @default(cuid())
   number     String
@@ -97,12 +109,11 @@ model EmployeePhone {
 
 model EmployeeAddress {
   id         String    @id @default(cuid())
+  zipCode    String
   country    String
   city       String
-  street     String
-  house      String
-  flat       String?
-  isMain     Boolean   @default(true)
+  address    String
+  isMain     Boolean   @default(false)
   employeeId String
   employee   Employee  @relation(fields: [employeeId], references: [id])
   deletedAt  DateTime?
@@ -237,6 +248,7 @@ enum MaritalStatus {
 enum Sex {
   MALE
   FEMALE
+  NOT_SPECIFIED
 }
 
 enum EmployeeStatus {
@@ -244,4 +256,10 @@ enum EmployeeStatus {
   HIRED
   FIRED
   MATERNITY_LEAVE
+}
+
+enum ExternalIdType {
+  PREVIOUS_DB_ID
+  RKEEPER_ID
+  OTHER
 }
