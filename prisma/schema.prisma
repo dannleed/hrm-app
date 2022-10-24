@@ -49,6 +49,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  employee      Employee?
 }
 
 model VerificationToken {
@@ -57,4 +58,190 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Employee {
+  id                      String                    @id @default(cuid())
+  internalId              String                    @unique
+  firstName               String
+  lastName                String
+  middleName              String?
+  phone                   EmployeePhone[]
+  address                 EmployeeAddress[]
+  userId                  String                    @unique
+  user                    User                      @relation(fields: [userId], references: [id])
+  dateOfBirth             DateTime
+  sex                     Sex
+  position                Position                  @relation(fields: [positionId], references: [id])
+  positionId              String
+  location                Location                  @relation(fields: [locationId], references: [id])
+  locationId              String
+  child                   EmployeeChild[]
+  document                Document[]
+  emergencyContact        EmergencyContact[]
+  status                  EmployeeStatus
+  employeePositionHistory EmployeePositionHistory[]
+  employeeLocationHistory EmployeeLocationHistory[]
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  deletedAt               DateTime?
+}
+
+model EmployeePhone {
+  id         String    @id @default(cuid())
+  number     String
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  deletedAt  DateTime?
+}
+
+model EmployeeAddress {
+  id         String    @id @default(cuid())
+  country    String
+  city       String
+  street     String
+  house      String
+  flat       String?
+  isMain     Boolean   @default(true)
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  deletedAt  DateTime?
+}
+
+model EmergencyContact {
+  id              String    @id @default(cuid())
+  firstName       String
+  lastName        String
+  middleName      String
+  phone           String
+  degreeOfKinship String
+  employeeId      String
+  employee        Employee  @relation(fields: [employeeId], references: [id])
+  deletedAt       DateTime?
+}
+
+model Position {
+  id                      String                    @id @default(cuid())
+  name                    String
+  category                PositionGroup             @relation(fields: [PositionGroupId], references: [id])
+  description             String
+  Employee                Employee[]
+  Salary                  Salary[]
+  PositionGroupId         String
+  EmployeePositionHistory EmployeePositionHistory[]
+  deletedAt               DateTime?
+}
+
+model EmployeePositionHistory {
+  id         String    @id @default(cuid())
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  positionId String
+  position   Position  @relation(fields: [positionId], references: [id])
+  startDate  DateTime
+  endDate    DateTime?
+  deletedAt  DateTime?
+}
+
+model PositionGroup {
+  id           String      @id @default(cuid())
+  name         String
+  description  String
+  position     Position[]
+  permission   Permission? @relation(fields: [permissionId], references: [id])
+  permissionId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  deletedAt    DateTime?
+}
+
+model Department {
+  id          String          @id @default(cuid())
+  name        String
+  description String
+  position    PositionGroup[]
+}
+
+model Location {
+  id                      String                    @id @default(cuid())
+  internalId              String                    @unique
+  name                    String
+  description             String
+  employees               Employee[]
+  EmployeeLocationHistory EmployeeLocationHistory[]
+}
+
+model EmployeeLocationHistory {
+  id         String    @id @default(cuid())
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  locationId String
+  location   Location  @relation(fields: [locationId], references: [id])
+  startDate  DateTime
+  endDate    DateTime?
+}
+
+model Permission {
+  id            String          @id @default(cuid())
+  name          String
+  description   String
+  PositionGroup PositionGroup[]
+}
+
+model Salary {
+  id         String    @id @default(cuid())
+  amount     Float
+  dateFrom   DateTime
+  dateTo     DateTime?
+  positionId String
+  position   Position  @relation(fields: [positionId], references: [id])
+}
+
+model EmployeeChild {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  middleName  String
+  dateOfBirth DateTime
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  documentId String       @unique
+  comment    String?
+  type       DocumentType
+  files      String[]
+  employeeId String
+  employee   Employee     @relation(fields: [employeeId], references: [id])
+}
+
+enum DocumentType {
+  PASSPORT
+  DRIVING_LICENSE
+  BIRTH_CERTIFICATE
+  TAX_CARD
+  MEDICAL_BOOK
+  VACCINATION_CARD
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum EmployeeStatus {
+  CANDIDATE
+  HIRED
+  FIRED
+  MATERNITY_LEAVE
 }
