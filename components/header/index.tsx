@@ -96,11 +96,27 @@ export function HeaderAction({ links }: HeaderActionProps) {
 
 	return (
 		<>
-			<Header height={HEADER_HEIGHT} sx={{ borderBottom: 0 }} mb={120}>
+			<Header
+				style={{
+					position: 'sticky',
+				}}
+				height={HEADER_HEIGHT}
+				sx={{ borderBottom: 0 }}
+				mb={120}
+			>
 				<Container className={classes.inner} fluid>
 					<Group>
 						<Burger opened={opened} onClick={toggle} className={classes.burger} size="sm" />
-						<h2>HRMS</h2>
+						<NextLink
+							href={'/'}
+							style={{
+								color: 'inherit',
+								textDecoration: 'none',
+							}}
+							passHref
+						>
+							<h2>HRMS</h2>
+						</NextLink>
 					</Group>
 					<Group spacing={5} className={classes.links}>
 						{items}
