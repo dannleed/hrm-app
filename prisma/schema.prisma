@@ -38,7 +38,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -69,12 +70,9 @@ model Employee {
   phone                   EmployeePhone[]
   address                 EmployeeAddress[]
   userId                  String                    @unique
-  user                    User                      @relation(fields: [userId], references: [id])
   dateOfBirth             DateTime
   sex                     Sex
-  position                Position                  @relation(fields: [positionId], references: [id])
   positionId              String
-  location                Location                  @relation(fields: [locationId], references: [id])
   locationId              String
   child                   EmployeeChild[]
   document                Document[]
@@ -85,6 +83,11 @@ model Employee {
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime                  @updatedAt
   deletedAt               DateTime?
+
+  location Location       @relation(fields: [locationId], references: [id])
+  position Position       @relation(fields: [positionId], references: [id])
+  user     User           @relation(fields: [userId], references: [id])
+  event    EventVisitor[]
 }
 
 model EmployeeExternalId {
@@ -103,8 +106,9 @@ model EmployeePhone {
   id         String    @id @default(cuid())
   number     String
   employeeId String
-  employee   Employee  @relation(fields: [employeeId], references: [id])
   deletedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model EmployeeAddress {
@@ -115,8 +119,9 @@ model EmployeeAddress {
   address    String
   isMain     Boolean   @default(false)
   employeeId String
-  employee   Employee  @relation(fields: [employeeId], references: [id])
   deletedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model EmergencyContact {
@@ -127,76 +132,94 @@ model EmergencyContact {
   phone           String
   degreeOfKinship String
   employeeId      String
-  employee        Employee  @relation(fields: [employeeId], references: [id])
   deletedAt       DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Position {
   id                      String                    @id @default(cuid())
   name                    String
-  category                PositionGroup             @relation(fields: [PositionGroupId], references: [id])
-  description             String
+  description             String?
   Employee                Employee[]
   Salary                  Salary[]
   PositionGroupId         String
   EmployeePositionHistory EmployeePositionHistory[]
   deletedAt               DateTime?
+
+  category PositionGroup @relation(fields: [PositionGroupId], references: [id])
 }
 
 model EmployeePositionHistory {
   id         String    @id @default(cuid())
   employeeId String
-  employee   Employee  @relation(fields: [employeeId], references: [id])
   positionId String
-  position   Position  @relation(fields: [positionId], references: [id])
   startDate  DateTime
   endDate    DateTime?
   deletedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
 }
 
 model PositionGroup {
-  id           String      @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  description  String
+  description  String?
   position     Position[]
-  permission   Permission? @relation(fields: [permissionId], references: [id])
   permissionId String?
-  department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
   deletedAt    DateTime?
+
+  permission Permission? @relation(fields: [permissionId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
 }
 
 model Department {
   id          String          @id @default(cuid())
   name        String
-  description String
+  description String?
   position    PositionGroup[]
 }
 
 model Location {
   id                      String                    @id @default(cuid())
-  internalId              String                    @unique
+  externalId              String                    @unique
   name                    String
-  description             String
+  description             String?
+  address                 String
   employees               Employee[]
-  EmployeeLocationHistory EmployeeLocationHistory[]
+  employeeLocationHistory EmployeeLocationHistory[]
+  locationPhone           LocationPhone[]
+  event                   Event[]
+  schedule                EventSchedule[]
+}
+
+model LocationPhone {
+  id         String    @id @default(cuid())
+  number     String
+  locationId String
+  deletedAt  DateTime?
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 }
 
 model EmployeeLocationHistory {
   id         String    @id @default(cuid())
   employeeId String
-  employee   Employee  @relation(fields: [employeeId], references: [id])
   locationId String
-  location   Location  @relation(fields: [locationId], references: [id])
   startDate  DateTime
   endDate    DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 }
 
 model Permission {
   id            String          @id @default(cuid())
   name          String
-  description   String
-  PositionGroup PositionGroup[]
+  description   String?
+  positionGroup PositionGroup[]
 }
 
 model Salary {
@@ -205,7 +228,8 @@ model Salary {
   dateFrom   DateTime
   dateTo     DateTime?
   positionId String
-  position   Position  @relation(fields: [positionId], references: [id])
+
+  position Position @relation(fields: [positionId], references: [id])
 }
 
 model EmployeeChild {
@@ -215,7 +239,8 @@ model EmployeeChild {
   middleName  String
   dateOfBirth DateTime
   employeeId  String
-  employee    Employee @relation(fields: [employeeId], references: [id])
+
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Document {
@@ -225,7 +250,48 @@ model Document {
   type       DocumentType
   files      String[]
   employeeId String
-  employee   Employee     @relation(fields: [employeeId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  deletedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Event {
+  id           String          @id @default(cuid())
+  name         String
+  description  String?
+  locationId   String
+  deletedAt    DateTime?
+  schedule     EventSchedule[]
+  eventVisitor EventVisitor[]
+
+  location Location @relation(fields: [locationId], references: [id])
+}
+
+model EventVisitor {
+  id         String    @id @default(cuid())
+  eventId    String
+  employeeId String
+  scheduleId String
+  deletedAt  DateTime?
+
+  schedule EventSchedule @relation(fields: [scheduleId], references: [id])
+  employee Employee      @relation(fields: [employeeId], references: [id])
+  event    Event         @relation(fields: [eventId], references: [id])
+}
+
+model EventSchedule {
+  id           String         @id @default(cuid())
+  eventId      String
+  dateTimeFrom DateTime
+  dateTimeTo   DateTime
+  locationId   String?
+  deletedAt    DateTime?
+  eventVisitor EventVisitor[]
+
+  event    Event     @relation(fields: [eventId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
 }
 
 enum DocumentType {
