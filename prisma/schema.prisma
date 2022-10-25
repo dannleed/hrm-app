@@ -193,6 +193,7 @@ model Location {
   locationPhone           LocationPhone[]
   event                   Event[]
   schedule                EventSchedule[]
+  salary                  Salary[]
 }
 
 model LocationPhone {
@@ -229,7 +230,8 @@ model Salary {
   dateTo     DateTime?
   positionId String
 
-  position Position @relation(fields: [positionId], references: [id])
+  location Location[]
+  position Position   @relation(fields: [positionId], references: [id])
 }
 
 model EmployeeChild {
