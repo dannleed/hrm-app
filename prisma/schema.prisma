@@ -321,7 +321,8 @@ enum Sex {
 
 enum EmployeeStatus {
   CANDIDATE
-  HIRED
+  FULLTIME
+  PARTTIME
   FIRED
   MATERNITY_LEAVE
 }
