@@ -66,10 +66,11 @@ function Contacts({ data }: { data: Contact[] }) {
 			<Center>
 				<Flex align={'center'} justify={'start'} wrap={'wrap'} maw={500} gap={20} p={20}>
 					{data.map((contact) => {
-						let imageLink = '';
+						let imageLink;
 						if (contact.photo) {
 							const rx = /\/d\/(.+)\//gm;
-							imageLink = `https://drive.google.com/uc?id=${rx.exec(contact.photo)[1]}`;
+							imageLink =
+								contact.phone && `https://drive.google.com/uc?id=${rx.exec(contact.photo)![1]}`;
 						}
 
 						return (
