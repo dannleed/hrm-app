@@ -53,7 +53,7 @@ function Contacts({ data }: { data: Contact[] }) {
 			</Head>
 			<Center
 				pos={'sticky'}
-				w={'100vw'}
+				w={'100%'}
 				top={0}
 				style={{
 					zIndex: 100,
@@ -69,9 +69,8 @@ function Contacts({ data }: { data: Contact[] }) {
 					{data.map((contact) => {
 						let imageLink;
 						if (contact.photo) {
-							const rx = /\/d\/(.+)\//gm;
-							imageLink =
-								contact.phone && `https://drive.google.com/uc?id=${rx.exec(contact.photo)![1]}`;
+							const rx = /com\/(.+)/gm;
+							imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
 						}
 
 						return (
