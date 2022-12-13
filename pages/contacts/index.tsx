@@ -81,12 +81,14 @@ function Contacts({ data }: { data: Contact[] }) {
 											<div
 												style={{
 													width: '100%',
-													height: '100%',
-													objectFit: 'cover',
-													objectPosition: 'center',
 												}}
 											>
-												<Image src={imageLink} alt={contact.name} fill={true} />
+												<Image
+													src={imageLink}
+													alt={contact.name}
+													fill={true}
+													style={{ objectFit: 'cover', objectPosition: 'center' }}
+												/>
 											</div>
 										) : null}
 									</Avatar>
