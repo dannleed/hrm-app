@@ -26,7 +26,7 @@ export async function getServerSideProps() {
 	return {
 		props: {
 			data,
-		}, // will be passed to the page component as props
+		},
 	};
 }
 
@@ -58,6 +58,7 @@ function Contacts({ data }: { data: Contact[] }) {
 				style={{
 					zIndex: 100,
 					backdropFilter: 'blur(10px)',
+					WebkitBackdropFilter: 'blur(10px)',
 					height: 60,
 				}}
 			>
