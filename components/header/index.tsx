@@ -10,7 +10,7 @@ import {
 	Loader,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { NextLink } from '@mantine/next';
+import Link from 'next/link';
 import { IconChevronDown, IconLogin, IconLogout } from '@tabler/icons';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
@@ -75,12 +75,12 @@ export function HeaderAction({ links }: HeaderActionProps) {
 			return (
 				<Menu key={link.label} trigger="hover" exitTransitionDuration={0}>
 					<Menu.Target>
-						<NextLink href={link.link} className={classes.link} passHref>
+						<Link href={link.link} className={classes.link} passHref>
 							<Center>
 								<span className={classes.linkLabel}>{link.label}</span>
 								<IconChevronDown size={12} stroke={1.5} />
 							</Center>
-						</NextLink>
+						</Link>
 					</Menu.Target>
 					<Menu.Dropdown>{menuItems}</Menu.Dropdown>
 				</Menu>
@@ -88,9 +88,9 @@ export function HeaderAction({ links }: HeaderActionProps) {
 		}
 
 		return (
-			<NextLink key={link.label} href={link.link} className={classes.link} passHref>
+			<Link key={link.label} href={link.link} className={classes.link} passHref>
 				{link.label}
-			</NextLink>
+			</Link>
 		);
 	});
 
@@ -107,7 +107,7 @@ export function HeaderAction({ links }: HeaderActionProps) {
 				<Container className={classes.inner} fluid>
 					<Group>
 						<Burger opened={opened} onClick={toggle} className={classes.burger} size="sm" />
-						<NextLink
+						<Link
 							href={'/'}
 							style={{
 								color: 'inherit',
@@ -116,7 +116,7 @@ export function HeaderAction({ links }: HeaderActionProps) {
 							passHref
 						>
 							<h2>HRMS</h2>
-						</NextLink>
+						</Link>
 					</Group>
 					<Group spacing={5} className={classes.links}>
 						{items}
