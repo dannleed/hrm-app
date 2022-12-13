@@ -78,7 +78,16 @@ function Contacts({ data }: { data: Contact[] }) {
 								<Group noWrap>
 									<Avatar size={94} radius="md">
 										{imageLink ? (
-											<Image src={imageLink} alt={contact.name} width={94} height={94} />
+											<div
+												style={{
+													width: '100%',
+													height: '100%',
+													objectFit: 'cover',
+													objectPosition: 'center',
+												}}
+											>
+												<Image src={imageLink} alt={contact.name} fill={true} />
+											</div>
 										) : null}
 									</Avatar>
 									<div>
