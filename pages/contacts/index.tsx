@@ -80,7 +80,6 @@ function Contacts({ data }: { data: Contact[] }) {
 					/>
 				</Flex>
 			</Paper>
-
 			<Center>
 				<Flex align={'center'} justify={'start'} wrap={'wrap'} maw={600} gap={10} p={10} miw={350}>
 					{filteredData.map((contact) => {
@@ -121,6 +120,7 @@ function Contacts({ data }: { data: Contact[] }) {
 												style={{
 													objectFit: 'cover',
 													objectPosition: `${posX} ${posY}`,
+													maxWidth: '100%',
 												}}
 											/>
 										</Avatar>

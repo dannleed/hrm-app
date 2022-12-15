@@ -15,7 +15,10 @@ const App = ({ Component, pageProps }: AppWithAuthProps) => {
 			<MantineProvider withGlobalStyles withNormalizeCSS>
 				<RouterTransition />
 				<Head>
-					<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+					<meta
+						name="viewport"
+						content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
+					/>
 				</Head>
 				<Component {...pageProps} />
 			</MantineProvider>
