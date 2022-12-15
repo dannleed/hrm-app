@@ -1,8 +1,9 @@
-import { Center, Group, Avatar, Text, Flex } from '@mantine/core';
-import { IconPhoneCall, IconAt } from '@tabler/icons';
+import { Center, Group, Avatar, Text, Flex, Select } from '@mantine/core';
+import { IconPhoneCall, IconAt, IconMapPin } from '@tabler/icons';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 type Contact = {
 	'category': string;
@@ -24,8 +25,6 @@ export async function getServerSideProps() {
 
 	const data: Contact[] = await res.json();
 
-	console.log(data);
-
 	return {
 		props: {
 			data,
@@ -34,6 +33,21 @@ export async function getServerSideProps() {
 }
 
 function Contacts({ data }: { data: Contact[] }) {
+	const labels = ['Всі', ...new Set(data.map((contact) => contact.category))].map((label) => ({
+		label,
+		value: label,
+	}));
+
+	const [filteredData, setFilteredData] = useState(data);
+
+	const handleSelect = (value: string) => {
+		if (value === 'Всі') {
+			setFilteredData(data);
+		} else {
+			setFilteredData(data.filter((contact) => contact.category === value));
+		}
+	};
+
 	return (
 		<>
 			<Head>
@@ -43,23 +57,44 @@ function Contacts({ data }: { data: Contact[] }) {
 				pos={'sticky'}
 				w={'100%'}
 				top={0}
+				p={10}
 				style={{
 					zIndex: 100,
 					backdropFilter: 'blur(10px)',
 					WebkitBackdropFilter: 'blur(10px)',
-					height: 60,
+					height: 'auto',
 				}}
 			>
-				<h2>Контакт лист</h2>
+				<Flex align={'center'} justify={'center'} wrap={'nowrap'} maw={500} gap={10} m={'auto'}>
+					<Text weight={'bold'}>Контакт-лист </Text>
+					<Select
+						data={labels}
+						defaultValue={'Всі'}
+						onChange={handleSelect}
+						variant="unstyled"
+						radius="xl"
+						size="md"
+						iconWidth={20}
+					/>
+				</Flex>
 			</Center>
+
 			<Center>
 				<Flex align={'center'} justify={'start'} wrap={'wrap'} maw={500} gap={20} p={20}>
-					{data.map((contact) => {
+					{filteredData.map((contact) => {
 						let imageLink;
 						if (contact.photo) {
 							const rx = /com\/(.+)/gm;
 							imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
 						}
+
+						const phones = contact.phone?.split(',').map((phone) => {
+							if (phone.trim().startsWith('0800')) {
+								return phone.replace(/(\d{1})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
+							} else {
+								return phone.trim().replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
+							}
+						});
 
 						const posX = contact.posX !== '' ? `${contact.posX}%` : '50%';
 						const posY = contact.posY !== '' ? `${contact.posY}%` : '50%';
@@ -96,33 +131,54 @@ function Contacts({ data }: { data: Contact[] }) {
 											<Group noWrap spacing={10} mt={3}>
 												<IconAt stroke={1.5} size={16} />
 												<Link
-													href={`mailto:${contact.email}`}
+													href={`mailto:${contact.email.toLowerCase()}`}
 													style={{
 														textDecoration: 'none',
 													}}
 												>
 													<Text size="xs" color="dimmed">
-														{contact.email}
+														{contact.email.toLowerCase()}
+													</Text>
+												</Link>
+											</Group>
+										)}
+										{contact.address && (
+											<Group noWrap spacing={10} mt={3}>
+												<IconMapPin stroke={1.5} size={16} />
+												<Link
+													href={`${contact.google_maps_url}`}
+													style={{
+														textDecoration: 'none',
+													}}
+												>
+													<Text size="xs" color="dimmed">
+														{contact.address}
 													</Text>
 												</Link>
 											</Group>
 										)}
 
-										{contact.phone && (
-											<Group noWrap spacing={10} mt={5}>
-												<IconPhoneCall stroke={1.5} size={16} />
-												<Link
-													href={`tel:${contact.phone}`}
-													style={{
-														textDecoration: 'none',
-													}}
-												>
-													<Text size="xs" color="dimmed">
-														{contact.phone}
-													</Text>
-												</Link>
-											</Group>
-										)}
+										<Flex align={'center'} justify={'start'} wrap={'wrap'} gap={10} mt={3}>
+											{!!phones!.length &&
+												phones?.map(
+													(phone) =>
+														phone && (
+															<Group noWrap spacing={10} key={phone}>
+																<IconPhoneCall stroke={1.5} size={16} />
+																<Link
+																	href={`tel:${phone}`}
+																	style={{
+																		textDecoration: 'none',
+																	}}
+																>
+																	<Text size="xs" color="dimmed">
+																		{phone}
+																	</Text>
+																</Link>
+															</Group>
+														),
+												)}
+										</Flex>
 									</div>
 								</Group>
 							</div>
