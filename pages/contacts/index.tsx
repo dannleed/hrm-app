@@ -92,7 +92,7 @@ function Contacts({ data }: { data: Contact[] }) {
 												height={100}
 												style={{
 													objectFit: 'cover',
-													objectPosition: `50% ${contact.posY !== '' ? `${contact.posY}%` : '50%'}`,
+													objectPosition: `${posX} ${posY}`,
 												}}
 											/>
 										</Avatar>
