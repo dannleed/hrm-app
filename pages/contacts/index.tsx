@@ -117,6 +117,7 @@ function Contacts({ data }: { data: Contact[] }) {
 												src={imageLink}
 												alt={contact.name}
 												fill={true}
+												loading="lazy"
 												style={{
 													objectFit: 'cover',
 													objectPosition: `${posX} ${posY}`,
