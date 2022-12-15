@@ -13,6 +13,8 @@ type Contact = {
 	'google_maps_url': string | null;
 	'phone': string | null;
 	'email': string | null;
+	'posX': number | '';
+	'posY': number | '';
 	'photo': string | null;
 };
 
@@ -22,6 +24,8 @@ export async function getServerSideProps() {
 	);
 
 	const data: Contact[] = await res.json();
+
+	console.log(data);
 
 	return {
 		props: {
@@ -73,25 +77,28 @@ function Contacts({ data }: { data: Contact[] }) {
 							imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
 						}
 
+						const posX = contact.posX !== '' ? `${contact.posX}%` : '50%';
+						const posY = contact.posY !== '' ? `${contact.posY}%` : '50%';
+
 						return (
 							<div key={contact.name}>
 								<Group noWrap>
-									<Avatar size={94} radius="md">
-										{imageLink ? (
-											<div
+									{imageLink ? (
+										<Avatar size={100} radius="md">
+											<Image
+												src={imageLink}
+												alt={contact.name}
+												width={100}
+												height={100}
 												style={{
-													width: '100%',
+													objectFit: 'cover',
+													objectPosition: `50% ${contact.posY !== '' ? `${contact.posY}%` : '50%'}`,
 												}}
-											>
-												<Image
-													src={imageLink}
-													alt={contact.name}
-													fill={true}
-													style={{ objectFit: 'cover', objectPosition: 'center' }}
-												/>
-											</div>
-										) : null}
-									</Avatar>
+											/>
+										</Avatar>
+									) : (
+										<Avatar size={100} radius="md"></Avatar>
+									)}
 									<div>
 										<Text size="xs" sx={{ textTransform: 'uppercase' }} weight={700} color="dimmed">
 											{contact.position}
