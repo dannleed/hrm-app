@@ -3,7 +3,6 @@ import { IconPhoneCall, IconAt } from '@tabler/icons';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 type Contact = {
 	'category': string;
@@ -35,21 +34,6 @@ export async function getServerSideProps() {
 }
 
 function Contacts({ data }: { data: Contact[] }) {
-	const router = useRouter();
-
-	if (router.query.id !== '1eppyAZOqPhCEO7ouPNX1jWUVNmurj6hQipx4mxvmeBY') {
-		return (
-			<>
-				<Head>
-					<title>Контакт лист</title>
-				</Head>
-				<Center>
-					<h2>Немає доступу</h2>
-				</Center>
-			</>
-		);
-	}
-
 	return (
 		<>
 			<Head>
