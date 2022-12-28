@@ -122,7 +122,6 @@ function Contacts({ data }: { data: Contact[] }) {
 		const element = document.getElementById(transliterate(activeId));
 
 		if (element) {
-			element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 			setTimeout(() => {
 				element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 			}, 150);
