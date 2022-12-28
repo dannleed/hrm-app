@@ -13,12 +13,12 @@ import {
 	MANTINE_COLORS,
 } from '@mantine/core';
 import { IconPhoneCall, IconAt, IconMapPin, IconDownload } from '@tabler/icons';
+import { transliterate } from 'helpers';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { useDebouncedState } from '@mantine/hooks';
+import { useEffect, useState } from 'react';
+import { useScrollSpy } from '../../hooks/useScrollSpy';
 
 type Contact = {
 	'category': string;
@@ -76,49 +76,6 @@ END:VCARD`;
 	link.click();
 };
 
-const clamp = (value: number) => Math.max(0, value);
-
-const isBetween = (value: number, floor: number, ceil: number) => value >= floor && value <= ceil;
-
-// hooks
-const useScrollspy = (ids: string[], offset: number = 0) => {
-	const [activeId, setActiveId] = useDebouncedState('', 50);
-
-	useLayoutEffect(() => {
-		const listener = () => {
-			const scroll = window.pageYOffset;
-
-			const position = ids
-				.map((id) => {
-					const element = document.getElementById(id);
-
-					if (!element) return { id, top: -1, bottom: -1 };
-
-					const rect = element.getBoundingClientRect();
-					const top = clamp(rect.top + scroll - offset);
-					const bottom = clamp(rect.bottom + scroll - offset);
-
-					return { id, top, bottom };
-				})
-				.find(({ top, bottom }) => isBetween(scroll, top, bottom));
-
-			setActiveId(position?.id || '');
-		};
-
-		listener();
-
-		window.addEventListener('resize', listener);
-		window.addEventListener('scroll', listener);
-
-		return () => {
-			window.removeEventListener('resize', listener);
-			window.removeEventListener('scroll', listener);
-		};
-	}, [ids, offset]);
-
-	return activeId;
-};
-
 export async function getServerSideProps() {
 	const res = await fetch(
 		'https://script.google.com/macros/s/AKfycbxFPyaXUCJVJv6Sco2_vfho504HmpCZs3E2H99hGohwNUv55F3rpElSWF9KfLUnsS-0/exec',
@@ -134,7 +91,6 @@ export async function getServerSideProps() {
 }
 
 function Contacts({ data }: { data: Contact[] }) {
-	const router = useRouter();
 	const { classes } = useStyles();
 
 	const groupedContacts: IContactData = data.reduce((group, contact) => {
@@ -142,7 +98,7 @@ function Contacts({ data }: { data: Contact[] }) {
 		group[category] = group[category] ?? [];
 		group[category].push(contact);
 		return group;
-	}, {});
+	}, {} as IContactData);
 
 	const labels = [...new Set(data.map((contact) => contact.category))].map((label) => ({
 		label,
@@ -157,18 +113,21 @@ function Contacts({ data }: { data: Contact[] }) {
 		}
 	}, []);
 
-	const activeId = useScrollspy(
+	const activeId = useScrollSpy(
 		labels.map((el) => el.value),
-		70,
+		80,
 	);
 
 	useEffect(() => {
-		const element = document.getElementById(activeId + '_menu');
+		const element = document.getElementById(transliterate(activeId));
+
 		if (element) {
-			// 👇 Will scroll smoothly to the top of the next section
-			element.scrollIntoView({ behavior: 'smooth' });
+			element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+			setTimeout(() => {
+				element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+			}, 150);
 		}
-	}, [activeId]);
+	});
 
 	return (
 		<div>
@@ -186,7 +145,7 @@ function Contacts({ data }: { data: Contact[] }) {
 				className={classes.navbar}
 			>
 				<Tabs
-					defaultValue={activeId}
+					defaultValue={labels[0].value}
 					value={activeId}
 					unstyled
 					styles={(theme) => ({
@@ -228,7 +187,7 @@ function Contacts({ data }: { data: Contact[] }) {
 									style={{
 										textDecoration: 'none',
 									}}
-									id={el.value + '_menu'}
+									id={transliterate(el.value)}
 								>
 									<Tabs.Tab key={el.value} value={el.value}>
 										{el.label}
@@ -243,142 +202,141 @@ function Contacts({ data }: { data: Contact[] }) {
 				<Flex align={'center'} justify={'start'} wrap={'wrap'} maw={600} gap={10} p={10} miw={350}>
 					{Object.keys(groupedContacts).map((label) => {
 						return (
-							<>
-								<section
-									style={{ all: 'inherit', padding: 0, paddingTop: 70, marginBottom: -70 }}
-									id={label.replace(' ', '_')}
-								>
-									<Title order={2} key={label}>
-										{label}
-									</Title>
-									{groupedContacts[label].map((contact) => {
-										let imageLink;
-										if (contact.photo) {
-											const rx = /com\/(.+)/gm;
-											imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
+							<section
+								style={{ all: 'inherit', padding: 0, paddingTop: 70, marginBottom: -50 }}
+								id={label.replace(' ', '_')}
+								key={label.replace(' ', '_')}
+							>
+								<Title order={2} key={label}>
+									{label}
+								</Title>
+								{groupedContacts[label].map((contact) => {
+									let imageLink;
+									if (contact.photo) {
+										const rx = /com\/(.+)/gm;
+										imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
+									}
+
+									const phones = contact.phone?.split(',').map((phone) => {
+										if (phone.trim().startsWith('0800')) {
+											return phone.replace(/(\d{1})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
+										} else {
+											return phone.trim().replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
 										}
+									});
 
-										const phones = contact.phone?.split(',').map((phone) => {
-											if (phone.trim().startsWith('0800')) {
-												return phone.replace(/(\d{1})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
-											} else {
-												return phone.trim().replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 ');
-											}
-										});
+									const isAbleToSave = contact.name && contact.phone && isMobile;
 
-										const isAbleToSave = contact.name && contact.phone && isMobile;
+									const posX = contact.posX !== '' ? `${contact.posX}%` : '50%';
+									const posY = contact.posY !== '' ? `${contact.posY}%` : '50%';
 
-										const posX = contact.posX !== '' ? `${contact.posX}%` : '50%';
-										const posY = contact.posY !== '' ? `${contact.posY}%` : '50%';
+									const colorByName =
+										MANTINE_COLORS[
+											contact.name.split(' ')[0].charCodeAt(0) % MANTINE_COLORS.length ?? 0
+										];
 
-										const colorByName =
-											MANTINE_COLORS[
-												contact.name.split(' ')[0].charCodeAt(0) % MANTINE_COLORS.length ?? 0
-											];
-
-										return (
-											<Paper
-												shadow={'lg'}
-												p={'xs'}
-												withBorder={true}
-												radius={'lg'}
-												key={contact.name}
-												w={'100%'}
-												miw={300}
-												pos={'relative'}
-											>
-												{isAbleToSave && (
-													<ActionIcon
-														onClick={() => exportToVCard(contact)}
-														pos={'absolute'}
-														top={4}
-														right={4}
-														bg={'#ffffff70'}
-														className={classes.actionIcon}
-													>
-														<IconDownload size={16} />
-													</ActionIcon>
+									return (
+										<Paper
+											shadow={'lg'}
+											p={'xs'}
+											withBorder={true}
+											radius={'lg'}
+											key={contact.name}
+											w={'100%'}
+											miw={300}
+											pos={'relative'}
+										>
+											{isAbleToSave && (
+												<ActionIcon
+													onClick={() => exportToVCard(contact)}
+													pos={'absolute'}
+													top={4}
+													right={4}
+													bg={'#ffffff70'}
+													className={classes.actionIcon}
+												>
+													<IconDownload size={16} />
+												</ActionIcon>
+											)}
+											<Group noWrap spacing={10}>
+												{imageLink ? (
+													<Avatar size={96} radius="md">
+														<Image
+															src={imageLink}
+															alt={contact.name}
+															sizes="192px"
+															quality={90}
+															loading="lazy"
+															className={classes.image}
+															style={{ objectPosition: `${posX} ${posY}` }}
+															fill
+														/>
+													</Avatar>
+												) : (
+													<Avatar size={96} radius="md" color={colorByName}>
+														{contact.name.split(' ')[0][0] + contact.name.split(' ')[1][0]}
+													</Avatar>
 												)}
-												<Group noWrap spacing={10}>
-													{imageLink ? (
-														<Avatar size={96} radius="md">
-															<Image
-																src={imageLink}
-																alt={contact.name}
-																sizes="192px"
-																quality={90}
-																loading="lazy"
-																className={classes.image}
-																style={{ objectPosition: `${posX} ${posY}` }}
-																fill
-															/>
-														</Avatar>
-													) : (
-														<Avatar size={96} radius="md" color={colorByName}>
-															{contact.name.split(' ')[0][0] + contact.name.split(' ')[1][0]}
-														</Avatar>
+												<div>
+													<Text
+														size="xs"
+														sx={{ textTransform: 'uppercase' }}
+														weight={700}
+														color="dimmed"
+													>
+														{contact.position}
+													</Text>
+
+													<Text size="lg" weight={500}>
+														{contact.name}
+													</Text>
+
+													{contact.email && (
+														<Group noWrap spacing={5} mt={3}>
+															<IconAt stroke={1.5} size={16} />
+															<Link
+																href={`mailto:${contact.email.toLowerCase()}`}
+																className={classes.link}
+															>
+																<Text size="xs" color="dimmed">
+																	{contact.email.toLowerCase()}
+																</Text>
+															</Link>
+														</Group>
 													)}
-													<div>
-														<Text
-															size="xs"
-															sx={{ textTransform: 'uppercase' }}
-															weight={700}
-															color="dimmed"
-														>
-															{contact.position}
-														</Text>
+													{contact.address && (
+														<Group noWrap spacing={5} mt={3}>
+															<IconMapPin stroke={1.5} size={16} />
+															<Link href={`${contact.google_maps_url}`} className={classes.link}>
+																<Text size="xs" color="dimmed">
+																	{contact.address}
+																</Text>
+															</Link>
+														</Group>
+													)}
 
-														<Text size="lg" weight={500}>
-															{contact.name}
-														</Text>
-
-														{contact.email && (
-															<Group noWrap spacing={5} mt={3}>
-																<IconAt stroke={1.5} size={16} />
-																<Link
-																	href={`mailto:${contact.email.toLowerCase()}`}
-																	className={classes.link}
-																>
-																	<Text size="xs" color="dimmed">
-																		{contact.email.toLowerCase()}
-																	</Text>
-																</Link>
-															</Group>
-														)}
-														{contact.address && (
-															<Group noWrap spacing={5} mt={3}>
-																<IconMapPin stroke={1.5} size={16} />
-																<Link href={`${contact.google_maps_url}`} className={classes.link}>
-																	<Text size="xs" color="dimmed">
-																		{contact.address}
-																	</Text>
-																</Link>
-															</Group>
-														)}
-
-														<Flex align={'center'} justify={'start'} wrap={'wrap'} gap={10} mt={3}>
-															{!!phones!.length &&
-																phones?.map(
-																	(phone) =>
-																		phone && (
-																			<Group noWrap spacing={5} key={phone}>
-																				<IconPhoneCall stroke={1.5} size={16} />
-																				<Link href={`tel:${phone}`} className={classes.link}>
-																					<Text size="xs" color="dimmed">
-																						{phone}
-																					</Text>
-																				</Link>
-																			</Group>
-																		),
-																)}
-														</Flex>
-													</div>
-												</Group>
-											</Paper>
-										);
-									})}
-								</section>
-							</>
+													<Flex align={'center'} justify={'start'} wrap={'wrap'} gap={10} mt={3}>
+														{!!phones!.length &&
+															phones?.map(
+																(phone) =>
+																	phone && (
+																		<Group noWrap spacing={5} key={phone}>
+																			<IconPhoneCall stroke={1.5} size={16} />
+																			<Link href={`tel:${phone}`} className={classes.link}>
+																				<Text size="xs" color="dimmed">
+																					{phone}
+																				</Text>
+																			</Link>
+																		</Group>
+																	),
+															)}
+													</Flex>
+												</div>
+											</Group>
+										</Paper>
+									);
+								})}
+							</section>
 						);
 					})}
 				</Flex>
