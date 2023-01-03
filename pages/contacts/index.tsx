@@ -233,7 +233,7 @@ const FilterTabs = ({ labels }: { labels: { value: string; label: string }[] }) 
 
 	useEffect(() => {
 		const el = document.querySelector('#tabs_container')?.children as HTMLCollectionOf<HTMLElement>;
-		if (el) {
+		if (el && activeId) {
 			const area = [...el].map((el: HTMLElement) => ({
 				id: el.id,
 				offset: el.offsetLeft,
