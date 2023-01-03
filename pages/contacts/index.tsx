@@ -225,16 +225,29 @@ const FilterTabs = ({ labels }: { labels: { value: string; label: string }[] }) 
 	);
 
 	const handleClick = (id: string) => {
-		document.getElementById(id)?.scrollIntoView();
+		const el = document.getElementById(id) as HTMLElement;
+		window.scrollTo({
+			top: el.offsetTop,
+		});
 	};
 
 	useEffect(() => {
-		const element = document.getElementById(transliterate(activeId));
+		const el = document.querySelector('#tabs_container')?.children as HTMLCollectionOf<HTMLElement>;
+		if (el) {
+			const area = [...el].map((el: HTMLElement) => ({
+				id: el.id,
+				offset: el.offsetLeft,
+				width: el.offsetWidth,
+			}));
 
-		if (element) {
-			setTimeout(() => {
-				element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-			}, 100);
+			const vw = window.visualViewport!.width;
+
+			const elementParams = area.filter((el) => el.id === transliterate(activeId))[0];
+
+			document.querySelector('.mantine-ScrollArea-viewport')?.scrollTo({
+				left: elementParams.offset - (vw - 20) / 2 + elementParams.width / 2,
+				behavior: 'smooth',
+			});
 		}
 	}, [activeId]);
 
@@ -284,7 +297,7 @@ const FilterTabs = ({ labels }: { labels: { value: string; label: string }[] }) 
 				})}
 			>
 				<ScrollArea offsetScrollbars scrollbarSize={5} type="never">
-					<Tabs.List>
+					<Tabs.List id={'tabs_container'}>
 						{labels.map((el) => (
 							<div key={el.value} id={transliterate(el.value)}>
 								<Tabs.Tab key={el.value} value={el.value} onClick={() => handleClick(el.value)}>
@@ -344,6 +357,7 @@ function Contacts({ data }: { data: Contact[] }) {
 						gap={10}
 						p={10}
 						miw={350}
+						id={'group_container'}
 					>
 						{labels.map((label, i) => {
 							return (
