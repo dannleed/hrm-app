@@ -11,6 +11,7 @@ import {
 	Title,
 	createStyles,
 	MANTINE_COLORS,
+	Divider,
 } from '@mantine/core';
 import { IconPhoneCall, IconAt, IconMapPin, IconDownload } from '@tabler/icons';
 import { transliterate } from 'helpers';
@@ -131,7 +132,7 @@ const Contact = ({ data }: { data: Contact }) => {
 		MANTINE_COLORS[contact.name.split(' ')[0].charCodeAt(0) % MANTINE_COLORS.length ?? 0];
 
 	return (
-		<>
+		<Flex gap={6} direction={'column'}>
 			<Group noWrap spacing={10} pos={'relative'}>
 				{isAbleToSave && (
 					<ActionIcon
@@ -164,11 +165,11 @@ const Contact = ({ data }: { data: Contact }) => {
 					</Avatar>
 				)}
 				<div>
-					<Text size="xs" sx={{ textTransform: 'uppercase' }} weight={700} color="dimmed">
+					<Text size="xs" sx={{ textTransform: 'uppercase' }} weight={600} color="dimmed">
 						{contact.position}
 					</Text>
 
-					<Text size="lg" weight={500}>
+					<Text size="md" weight={500}>
 						{contact.name}
 					</Text>
 
@@ -182,6 +183,7 @@ const Contact = ({ data }: { data: Contact }) => {
 							</Link>
 						</Group>
 					)}
+
 					{contact.address && (
 						<Group noWrap spacing={5} mt={3}>
 							<IconMapPin stroke={1.5} size={16} />
@@ -194,7 +196,7 @@ const Contact = ({ data }: { data: Contact }) => {
 					)}
 
 					<Flex align={'center'} justify={'start'} wrap={'wrap'} gap={10} mt={3}>
-						{!!phones!.length &&
+						{phones?.length &&
 							phones?.map(
 								(phone) =>
 									phone && (
@@ -211,8 +213,15 @@ const Contact = ({ data }: { data: Contact }) => {
 					</Flex>
 				</div>
 			</Group>
-			{contact.children && contact.child.map((c) => <Contact key={c.name} data={c} />)}
-		</>
+
+			{contact.child?.length &&
+				contact.child.map((c) => (
+					<>
+						<Divider variant="dashed" />
+						<Contact key={c.name} data={c} />
+					</>
+				))}
+		</Flex>
 	);
 };
 
@@ -233,14 +242,14 @@ const FilterTabs = ({ labels }: { labels: { value: string; label: string }[] }) 
 
 	useEffect(() => {
 		const el = document.querySelector('#tabs_container')?.children as HTMLCollectionOf<HTMLElement>;
-		if (el && activeId) {
+		if (el && activeId && window.visualViewport) {
 			const area = [...el].map((el: HTMLElement) => ({
 				id: el.id,
 				offset: el.offsetLeft,
 				width: el.offsetWidth,
 			}));
 
-			const vw = window.visualViewport!.width;
+			const vw = window.visualViewport.width;
 
 			const elementParams = area.filter((el) => el.id === transliterate(activeId))[0];
 
@@ -365,9 +374,9 @@ function Contacts({ data }: { data: Contact[] }) {
 									style={{
 										all: 'inherit',
 										padding: 0,
-										paddingTop: 70,
-										marginBottom: -50,
-										paddingBottom: i === labels.length - 1 ? 250 : 0,
+										paddingTop: 65,
+										marginBottom: -40,
+										paddingBottom: i === labels.length - 1 ? 500 : 0,
 									}}
 									id={label.value}
 									key={label.value}
@@ -386,9 +395,7 @@ function Contacts({ data }: { data: Contact[] }) {
 											miw={300}
 											pos={'relative'}
 										>
-											<Flex direction={'column'} gap={10}>
-												<Contact key={contact.name} data={contact} />
-											</Flex>
+											<Contact key={contact.name} data={contact} />
 										</Paper>
 									))}
 								</section>
