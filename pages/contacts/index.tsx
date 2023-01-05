@@ -158,13 +158,14 @@ const Contact = ({ data }: { data: Contact }) => {
 					overlayBlur={3}
 					opened={isOpened}
 					onClose={onCloseModal}
-					size={loading ? (isMobile ? '100%' : 'md') : 'auto'}
+					size={loading ? '60px' : 'auto'}
 					padding={0}
 					withCloseButton={false}
+					radius={'xl'}
 					centered
 				>
-					<LoadingOverlay visible={loading} />
-					<Skeleton visible={loading} h={'100%'} w={'100%'}>
+					<LoadingOverlay visible={loading} radius={'xl'} />
+					<Skeleton visible={loading} h={'100%'} w={'100%'} radius={loading ? 'xl' : 'md'}>
 						<div>
 							<Image
 								src={imageLink}
