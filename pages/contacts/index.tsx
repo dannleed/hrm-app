@@ -12,6 +12,9 @@ import {
 	createStyles,
 	MANTINE_COLORS,
 	Divider,
+	Modal,
+	Skeleton,
+	LoadingOverlay,
 } from '@mantine/core';
 import { IconPhoneCall, IconAt, IconMapPin, IconDownload } from '@tabler/icons';
 import { transliterate } from 'helpers';
@@ -49,6 +52,12 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
 	},
 	image: {
 		objectFit: 'cover',
+	},
+	imageBig: {
+		objectFit: 'cover',
+		width: '100%',
+		height: '100%',
+		aspectRatio: '1/1',
 	},
 	link: {
 		textDecoration: 'none',
@@ -97,6 +106,16 @@ export async function getServerSideProps() {
 }
 
 const Contact = ({ data }: { data: Contact }) => {
+	const [isOpened, setIsOpened] = useState(false);
+
+	const handleOpenImageModal = () => {
+		setIsOpened(true);
+	};
+
+	const onCloseModal = () => setIsOpened(false);
+
+	const [loading, setLoading] = useState(true);
+
 	const contact = data;
 
 	const { classes } = useStyles();
@@ -133,6 +152,35 @@ const Contact = ({ data }: { data: Contact }) => {
 
 	return (
 		<Flex gap={6} direction={'column'}>
+			{isOpened && imageLink && (
+				<Modal
+					overlayOpacity={0.55}
+					overlayBlur={3}
+					opened={isOpened}
+					onClose={onCloseModal}
+					size={loading ? (isMobile ? '100%' : 'md') : 'auto'}
+					padding={0}
+					withCloseButton={false}
+					centered
+				>
+					<LoadingOverlay visible={loading} />
+					<Skeleton visible={loading} h={'100%'} w={'100%'}>
+						<div>
+							<Image
+								src={imageLink}
+								alt={contact.name}
+								quality={90}
+								width={700}
+								height={700}
+								className={classes.imageBig}
+								style={{ objectPosition: `${posX} ${posY}` }}
+								onClick={onCloseModal}
+								onLoad={() => setLoading(false)}
+							/>
+						</div>
+					</Skeleton>
+				</Modal>
+			)}
 			<Group noWrap spacing={10} pos={'relative'}>
 				{isAbleToSave && (
 					<ActionIcon
@@ -147,7 +195,7 @@ const Contact = ({ data }: { data: Contact }) => {
 					</ActionIcon>
 				)}
 				{imageLink ? (
-					<Avatar size={96} radius="md">
+					<Avatar size={96} radius="md" onClick={handleOpenImageModal}>
 						<Image
 							src={imageLink}
 							alt={contact.name}
