@@ -50,6 +50,7 @@ interface ThProps {
 function Th({ children, reversed, sorted, onSort }: ThProps) {
 	const { classes } = useStyles();
 	const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
+
 	return (
 		<th className={classes.th}>
 			<UnstyledButton onClick={onSort} className={classes.control}>
@@ -68,6 +69,7 @@ function Th({ children, reversed, sorted, onSort }: ThProps) {
 
 function filterData(data: Record[], search: string) {
 	const query = search.toLowerCase().trim();
+
 	return data.filter((item) =>
 		keys(data[0]).some((key) => new String(item[key]).toLowerCase().includes(query)),
 	);
@@ -121,8 +123,8 @@ export async function getServerSideProps() {
 
 function Page({ elements }: { elements: Record[] }) {
 	const { classes } = useStyles();
-	const [search, setSearch] = useDebouncedState('', 300);
-	const [sortedData, setSortedData] = useDebouncedState(elements, 300);
+	const [search, setSearch] = useDebouncedState('', 150);
+	const [sortedData, setSortedData] = useDebouncedState(elements, 150);
 	const [sortBy, setSortBy] = useState<keyof Record | null>(null);
 	const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
@@ -140,7 +142,7 @@ function Page({ elements }: { elements: Record[] }) {
 		setSortedData(sortData(elements, { sortBy, reversed: reverseSortDirection, search: value }));
 	};
 
-	const rows = sortedData.map((element) => {
+	const rows = sortedData.slice(0, 199).map((element) => {
 		let badge;
 		if (element['Присутність'] === 'Да') {
 			badge = <Badge color={'green'}>Так</Badge>;
