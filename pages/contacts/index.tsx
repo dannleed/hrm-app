@@ -129,6 +129,7 @@ const Contact = ({ data }: { data: Contact }) => {
 	}, []);
 
 	let imageLink;
+
 	if (contact.photo) {
 		const rx = /com\/(.+)/gm;
 		imageLink = `https://i.gyazo.com/${rx.exec(contact.photo)![1]}.jpg`;
